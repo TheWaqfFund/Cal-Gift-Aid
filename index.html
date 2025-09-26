@@ -134,7 +134,7 @@
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[#8B003A]">Waqf Monetary Value Calculator — Gift Aid</h1>
               <p className="mt-2 max-w-3xl text-black">
                 This version shows the effect of <span className="font-semibold">Gift Aid (+25%)</span> on contributions,
-                keeping income at <span className="font-semibold">8%</span> and reinvestment at <span className="font-semibold">10%</span>, 
+                keeping income at <span className="font-semibold">8%</span> and reinvestment at <span className="font-semibold">10%</span>.
               </p>
             </header>
 
@@ -216,7 +216,7 @@
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold text-black">Waqf Value Over Time</h2>
                 <div className="text-sm text-black text-right">
-                  Model assumptions: <span className="font-medium">8% annual income</span> and <span className="font-medium">10% reinvestment</span> 
+                  Model assumptions: <span className="font-medium">8% annual income</span> and <span className="font-medium">10% reinvestment</span>, with fixed admin fees.
                 </div>
               </div>
               <div className="h-80">
@@ -273,7 +273,7 @@
               <details>
                 <summary className="cursor-pointer font-semibold text-[#8B003A]">How the model works</summary>
                 <div className="prose max-w-none mt-2 text-sm text-[#02314B]">
-                  <p><strong>Contributions & Gift Aid:</strong> Gift Aid adds 25% to eligible donations. Fees of 10% on gross contributions and 10% on income are applied (fixed, no toggle in UI).</p>
+                  <p><strong>Contributions & Gift Aid:</strong> Gift Aid adds 25% to eligible donations. Fees of 10% on gross contributions and 10% on income are applied automatically.</p>
                   <p><strong>Income & Compounding:</strong> Each year, income = principal × 8%. From income, 10% is admin and 10% is reinvested; the remaining 80% is distributed.</p>
                 </div>
               </details>
@@ -287,3 +287,4 @@
   </script>
 </body>
 </html>
+
