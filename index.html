@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Waqf Monetary Value Calculator — Gift Aid (No Admin Fees)</title>
+  <title>Waqf Monetary Value Calculator — Gift Aid</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Tailwind (for GH Pages demo) -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -49,31 +49,28 @@
     ];
 
     function App() {
-      // Inputs
       const [amount, setAmount] = useState(3);
       const [frequency, setFrequency] = useState("monthly");
       const [years, setYears] = useState(30);
-      const [applyGiftAid, setApplyGiftAid] = useState(true); // Gift Aid toggle
+      const [applyGiftAid, setApplyGiftAid] = useState(true);
       const [selectedPreset, setSelectedPreset] = useState(null);
       const [hoveredSeries, setHoveredSeries] = useState(null);
 
-      // Fixed model
-      const annualReturnPct = 8;   // gross income rate
-      const reinvestPct     = 10;  // % of gross income reinvested
+      const annualReturnPct = 8;
+      const reinvestPct     = 10;
 
       const { series, finalStats } = useMemo(() => {
         let principal = 0;
-        let cumulativeContrib = 0;        // donor out-of-pocket
-        let cumulativeGiftAid = 0;        // Gift Aid added
-        let cumulativeIncome = 0;         // gross income from principal
-        let cumulativeDistributed = 0;    // to projects (90% when 10% reinvest)
+        let cumulativeContrib = 0;
+        let cumulativeGiftAid = 0;
+        let cumulativeIncome = 0;
+        let cumulativeDistributed = 0;
 
         const data = [];
 
-        // Base annual contribution from user input
         const baseAnnualContribution = (() => {
           switch (frequency) {
-            case "oneoff":  return amount;      // year 1 only
+            case "oneoff":  return amount;
             case "monthly": return amount * 12;
             case "weekly":  return amount * 52;
             case "daily":   return amount * 365;
@@ -82,27 +79,23 @@
         })();
 
         for (let y = 0; y < years; y++) {
-          // Contributions per year
           const baseContrib = (frequency === "oneoff" && y > 0) ? 0 : baseAnnualContribution;
           if (baseContrib > 0) {
-            // Donor pays baseContrib; Gift Aid adds +25% if applied
             cumulativeContrib += baseContrib;
             const giftAid = applyGiftAid ? baseContrib * 0.25 : 0;
             cumulativeGiftAid += giftAid;
 
-            const grossContrib = baseContrib + giftAid; // amount entering charity books
-            principal += grossContrib; // NO admin fee in this version
+            const grossContrib = baseContrib + giftAid;
+            principal += grossContrib;
           }
 
-          // Investment year: income from principal
           const income = principal * (annualReturnPct / 100);
           cumulativeIncome += income;
 
-          // No admin fee on income
-          const reinvestAmt = (reinvestPct / 100) * income; // 10% of GROSS income
-          const distributeAmt = income - reinvestAmt;       // 90% to projects
+          const reinvestAmt = (reinvestPct / 100) * income;
+          const distributeAmt = income - reinvestAmt;
 
-          principal += reinvestAmt; // principal grows only by reinvested income
+          principal += reinvestAmt;
           cumulativeDistributed += distributeAmt;
 
           data.push({
@@ -138,7 +131,6 @@
               </p>
             </header>
 
-            {/* Section 1: Choose Waqf Share */}
             <section className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4 mb-8">
               <label className="block text-sm font-medium mb-1">Choose a Waqf Share</label>
               <select
@@ -158,7 +150,6 @@
               </select>
             </section>
 
-            {/* Section 2: Contribution Settings */}
             <section className="grid md:grid-cols-2 gap-4 mb-8">
               <div className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4">
                 <label className="block text-sm font-medium mb-1">Contribution Amount (£)</label>
@@ -190,29 +181,30 @@
               </div>
 
               <div className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium">Apply Gift Aid (+25%)</p>
-                    <button
-                      onClick={()=>setApplyGiftAid(v=>!v)}
-                      className={`px-3 py-1.5 rounded-full border ${applyGiftAid ? "bg-[#8B003A] text-white" : "bg-white border-[#8B003A] text-[#8B003A]"}`}
-                    >
-                      {applyGiftAid ? "On" : "Off"}
-                    </button>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm font-medium">Apply Gift Aid (+25%)</p>
+                      <button
+                        onClick={()=>setApplyGiftAid(v=>!v)}
+                        className={`px-3 py-1.5 rounded-full border ${applyGiftAid ? "bg-[#8B003A] text-white" : "bg-white border-[#8B003A] text-[#8B003A]"}`}
+                      >
+                        {applyGiftAid ? "On" : "Off"}
+                      </button>
+                    </div>
+                    <p className="text-xs text-[#02314B]">Adds 25% to eligible donations (UK Gift Aid).</p>
                   </div>
-                  <p className="text-xs text-[#02314B]">Adds 25% to eligible donations (UK Gift Aid).</p>
+                </div>
 
-                  <div className="mt-4 text-sm text-[#02314B] space-y-1">
-                    <p>Final Principal: <span className="font-semibold">{fmtGBP(last.principal)}</span></p>
-                    <p>Total Contributed (donor): {fmtGBP(last.cumulativeContrib)}</p>
-                    <p>Gift Aid Added: {fmtGBP(last.cumulativeGiftAid)}</p>
-                    <p>Income Generated: {fmtGBP(last.cumulativeIncome)}</p>
-                  </div>
+                <div className="mt-4 text-sm text-[#02314B] space-y-1">
+                  <p>Final Principal: <span className="font-semibold">{fmtGBP(last.principal)}</span></p>
+                  <p>Total Contributed (donor): {fmtGBP(last.cumulativeContrib)}</p>
+                  <p>Gift Aid Added: {fmtGBP(last.cumulativeGiftAid)}</p>
+                  <p>Income Generated: {fmtGBP(last.cumulativeIncome)}</p>
                 </div>
               </div>
             </section>
 
-            {/* Section 3: Chart */}
             <section className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4 mb-8">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold text-black">Waqf Value Over Time</h2>
