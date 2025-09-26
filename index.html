@@ -53,8 +53,8 @@
       const [amount, setAmount] = useState(3);
       const [frequency, setFrequency] = useState("monthly");
       const [years, setYears] = useState(30);
-      const applyAdminFees = true;                 // Admin fees ON in math (no toggle in UI)
-      const [applyGiftAid, setApplyGiftAid] = useState(true); // Gift Aid toggle
+      const [applyAdminFees, setApplyAdminFees] = useState(true);
+      const [applyGiftAid, setApplyGiftAid] = useState(true); // NEW: Gift Aid toggle
       const [selectedPreset, setSelectedPreset] = useState(null);
       const [hoveredSeries, setHoveredSeries] = useState(null);
 
@@ -131,7 +131,7 @@
             cumulativeDistributed,
           },
         };
-      }, [amount, frequency, years, applyGiftAid]); // removed applyAdminFees (constant)
+      }, [amount, frequency, years, applyAdminFees, applyGiftAid]);
 
       const last = finalStats;
 
@@ -177,4 +177,136 @@
                 />
 
                 <label className="block text-sm font-medium mt-4 mb-1">Frequency</label>
-                <div className="flex
+                <div className="flex flex-wrap gap-2">
+                  {frequencies.map((f) => (
+                    <button
+                      key={f.key}
+                      onClick={() => setFrequency(f.key)}
+                      className={`px-3 py-1.5 rounded-full border ${frequency===f.key ? "bg-[#8B003A] text-white" : "bg-white border-[#8B003A] text-[#8B003A]"}`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                <label className="block text-sm font-medium mt-4 mb-1">Years</label>
+                <input
+                  type="number" min={1} max={100} value={years}
+                  onChange={(e)=>setYears(Number(e.target.value))}
+                  className="w-full border rounded-xl px-3 py-2"
+                />
+              </div>
+
+              <div className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm font-medium">Apply Admin Fees</p>
+                      <button
+                        onClick={()=>setApplyAdminFees(v=>!v)}
+                        className={`px-3 py-1.5 rounded-full border ${applyAdminFees ? "bg-[#8B003A] text-white" : "bg-white border-[#8B003A] text-[#8B003A]"}`}
+                      >
+                        {applyAdminFees ? "On" : "Off"}
+                      </button>
+                    </div>
+                    <p className="text-xs text-[#02314B]">10% of each contribution and 10% of income. Toggle off if covered by Support Fund.</p>
+
+                    <div className="flex items-center gap-3 pt-2">
+                      <p className="text-sm font-medium">Apply Gift Aid (+25%)</p>
+                      <button
+                        onClick={()=>setApplyGiftAid(v=>!v)}
+                        className={`px-3 py-1.5 rounded-full border ${applyGiftAid ? "bg-[#8B003A] text-white" : "bg-white border-[#8B003A] text-[#8B003A]"}`}
+                      >
+                        {applyGiftAid ? "On" : "Off"}
+                      </button>
+                    </div>
+                    <p className="text-xs text-[#02314B]">Adds 25% to eligible donations before fees (UK Gift Aid).</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 text-sm text-[#02314B] space-y-1">
+                  <p>Final Principal: <span className="font-semibold">{fmtGBP(last.principal)}</span></p>
+                  <p>Total Contributed (donor): {fmtGBP(last.cumulativeContrib)}</p>
+                  <p>Gift Aid Added: {fmtGBP(last.cumulativeGiftAid)}</p>
+                  <p>Admin Fees Total: {fmtGBP(last.cumulativeAdminFees)}</p>
+                  <p>Income Generated: {fmtGBP(last.cumulativeIncome)}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* Section 3: Chart */}
+            <section className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4 mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-black">Waqf Value Over Time</h2>
+                <div className="text-sm text-black text-right">
+                  Model assumptions: <span className="font-medium">8% annual income</span> and <span className="font-medium">10% reinvestment</span>
+                </div>
+              </div>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={series} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F4E1C3" />
+                    <XAxis dataKey="year" tickFormatter={(y)=>`Y${y}`} stroke="black" />
+                    <YAxis tickFormatter={(v)=>v.toFixed(0)} interval={0} domain={[0, 'auto']} tickCount={10} stroke="black" />
+                    <Tooltip
+                      cursor={{ fill: 'transparent' }}
+                      contentStyle={{ backgroundColor: "#ffffff", color: "#02314B" }}
+                      formatter={(value, name) => [fmtGBP(Number(value)), name]}
+                      labelFormatter={(y)=>`Year ${y}`}
+                    />
+                    <Legend
+                      content={(props) => {
+                        const { payload } = props;
+                        return (
+                          <ul className="flex gap-6">
+                            {payload && payload.map((item) => (
+                              <li key={item.value} className="flex items-center gap-2">
+                                <span style={{ display: 'inline-block', width: 10, height: 10, backgroundColor: item.color, borderRadius: '50%' }}></span>
+                                <span style={{ color: 'black' }}>{item.value}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        );
+                      }}
+                    />
+                    <Bar
+                      dataKey="principal"
+                      name="Principal"
+                      stackId="a"
+                      fill="#679CBE"
+                      fillOpacity={hoveredSeries===null || hoveredSeries==='principal' ? 1 : 0.25}
+                      onMouseEnter={() => setHoveredSeries('principal')}
+                      onMouseLeave={() => setHoveredSeries(null)}
+                    />
+                    <Bar
+                      dataKey="cumulativeIncome"
+                      name="Income Generated"
+                      stackId="a"
+                      fill="#E3AF64"
+                      fillOpacity={hoveredSeries===null || hoveredSeries==='income' ? 1 : 0.25}
+                      onMouseEnter={() => setHoveredSeries('income')}
+                      onMouseLeave={() => setHoveredSeries(null)}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+
+            <section className="bg-white rounded-2xl border border-[#F4E1C3] shadow p-4">
+              <details>
+                <summary className="cursor-pointer font-semibold text-[#8B003A]">How the model works</summary>
+                <div className="prose max-w-none mt-2 text-sm text-[#02314B]">
+                  <p><strong>Contributions & Gift Aid:</strong> Gift Aid adds 25% to eligible donations before admin fees. Fees (if applied) are 10% of gross contributions and 10% of income.</p>
+                  <p><strong>Income & Compounding:</strong> Each year, income = principal × 8%. Of that, 10% is reinvested and 10% (if fees on) is admin; the remainder is distributed.</p>
+                </div>
+              </details>
+            </section>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
